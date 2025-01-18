@@ -28,6 +28,20 @@ class Map_editor:
                     screen.blit(image, (x * self.tile_size + 5, y * self.tile_size))
 
 
+class Character:
+    def __init__(self, position):
+        self.x, self.y = position
+
+    def get_position(self):
+        return self.x, self.y
+
+    def set_position(self, position):
+        self.x, self.y = position
+
+    def render(self, screen):
+        image = pygame.image.load("sprites/character.png")
+        screen.blit(image, (self.x * TILE_SIZE, self.y * TILE_SIZE))
+
 if __name__ == '__main__':
     pygame.init()
     pygame.display.set_caption('')
@@ -35,6 +49,7 @@ if __name__ == '__main__':
     screen = pygame.display.set_mode(size)
 
     mapor = Map_editor("map0", [0, 2, 3], 2)
+    charik = Character((1, 5))
 
     running = True
     clock = pygame.time.Clock()
@@ -44,6 +59,7 @@ if __name__ == '__main__':
                 running = False
         screen.fill((0, 0, 0))
         mapor.render(screen)
+        charik.render(screen)
         pygame.display.flip()
         clock.tick(FPS)
     pygame.quit()
