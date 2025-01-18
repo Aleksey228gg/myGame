@@ -17,12 +17,24 @@ class Map_editor:
         self.free_tiles = free_tile
         self.finish_tile = finish_tile
 
+    def render(self, screen):
+        for y in range(self.height):
+            for x in range(self.width):
+                if self.map[y][x] == 1:
+                    image = pygame.image.load("sprites/wall.jpg")
+                    screen.blit(image, (x * self.tile_size, y * self.tile_size))
+                elif self.map[y][x] == 3:
+                    image = pygame.image.load("sprites/item.png")
+                    screen.blit(image, (x * self.tile_size + 5, y * self.tile_size))
+
 
 if __name__ == '__main__':
     pygame.init()
     pygame.display.set_caption('')
     size = width, height = 1200, 800
     screen = pygame.display.set_mode(size)
+
+    mapor = Map_editor("map0", [0, 2, 3], 2)
 
     running = True
     clock = pygame.time.Clock()
@@ -31,5 +43,7 @@ if __name__ == '__main__':
             if event.type == pygame.QUIT:
                 running = False
         screen.fill((0, 0, 0))
+        mapor.render(screen)
         pygame.display.flip()
+        clock.tick(FPS)
     pygame.quit()
