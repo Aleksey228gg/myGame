@@ -1,9 +1,38 @@
 from symtable import Class
 
-import pygame
+import pygame, random
 
 FPS = 15
 TILE_SIZE = 40
+
+
+def generation():
+    map_g = []
+    serset = ['0', '1', '1', '0', '0', '0']
+    for i in range(20):
+        map_g.append([])
+        for e in range(35):
+            if i == 0 or i == 19 or e == 0 or e == 34:
+                map_g[i].append("1")
+            else:
+                map_g[i].append(random.choice(serset))
+    map_g[6][6] = '0'
+    f = open("maps/map0", "w")
+    for i in range(20):
+        f.write(' '.join(map_g[i]) + "\n")
+
+
+generation()
+all_sprites = pygame.sprite.Group()
+tiles_group = pygame.sprite.Group()
+player_group = pygame.sprite.Group()
+
+class Tile(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(tiles_group, all_sprites)
+        self.x, self.y = pos_x, pos_y
+        image = pygame.image.load("sprites/wall.jpg")
+        screen.blit(image, (self.x * TILE_SIZE, self.y * TILE_SIZE))
 
 class Map_editor:
     def __init__(self, map_name, free_tile, finish_tile):
@@ -21,16 +50,16 @@ class Map_editor:
         for y in range(self.height):
             for x in range(self.width):
                 if self.map[y][x] == 1:
-                    image = pygame.image.load("sprites/wall.jpg")
-                    screen.blit(image, (x * self.tile_size, y * self.tile_size))
+                    Tile(x, y)
                 elif self.map[y][x] == 3:
                     image = pygame.image.load("sprites/item.png")
                     screen.blit(image, (x * self.tile_size + 5, y * self.tile_size))
 
 
-class Character:
-    def __init__(self, position):
-        self.x, self.y = position
+class Character(pygame.sprite.Sprite):
+    def __init__(self, pos_x, pos_y):
+        super().__init__(player_group, all_sprites)
+        self.x, self.y = pos_x, pos_y
 
     def get_position(self):
         return self.x, self.y
@@ -42,14 +71,19 @@ class Character:
         image = pygame.image.load("sprites/character.png")
         screen.blit(image, (self.x * TILE_SIZE, self.y * TILE_SIZE))
 
+
+class Game:
+    pass
+
+
 if __name__ == '__main__':
     pygame.init()
     pygame.display.set_caption('')
-    size = width, height = 1200, 800
+    size = width, height = 500, 500
     screen = pygame.display.set_mode(size)
 
     mapor = Map_editor("map0", [0, 2, 3], 2)
-    charik = Character((1, 5))
+    charik = Character(6, 6)
 
     running = True
     clock = pygame.time.Clock()
