@@ -4,6 +4,8 @@ import pygame, random
 
 FPS = 15
 TILE_SIZE = 40
+tile_w = tile_h = 40
+
 
 
 def generation():
@@ -31,8 +33,9 @@ class Tile(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(tiles_group, all_sprites)
         self.x, self.y = pos_x, pos_y
-        image = pygame.image.load("sprites/wall.jpg")
-        screen.blit(image, (self.x * TILE_SIZE, self.y * TILE_SIZE))
+        self.image = pygame.image.load("sprites/wall.jpg")
+        screen.blit(self.image, (self.x * TILE_SIZE, self.y * TILE_SIZE))
+        self.rect = self.image.get_rect().move(pos_x * tile_w + 5, pos_y * tile_h + 5)
 
 class Map_editor:
     def __init__(self, map_name, free_tile, finish_tile):
@@ -60,6 +63,8 @@ class Character(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
         self.x, self.y = pos_x, pos_y
+        self.image = pygame.image.load("sprites/character.png")
+        self.rect = self.image.get_rect().move(pos_x * tile_w + 5, pos_y * tile_h + 5)
 
     def get_position(self):
         return self.x, self.y
@@ -68,18 +73,32 @@ class Character(pygame.sprite.Sprite):
         self.x, self.y = position
 
     def render(self, screen):
-        image = pygame.image.load("sprites/character.png")
-        screen.blit(image, (self.x * TILE_SIZE, self.y * TILE_SIZE))
+        screen.blit(self.image, (self.x * TILE_SIZE, self.y * TILE_SIZE))
 
 
-class Game:
-    pass
+
+width, height = 600, 600
+
+class Camera:
+    def __init__(self):
+        self.dx = 0
+        self.dy = 0
+
+    def apply(self, obj):
+        obj.rect.x += self.dx
+        obj.rect.y += self.dy
+
+    def update(self, target):
+        self.dx = -(target.rect.x + target.rect.w // 2 - width // 2)
+        self.dy = -(target.rect.y + target.rect.h // 2 - height // 2)
+
+camera = Camera()
 
 
 if __name__ == '__main__':
     pygame.init()
     pygame.display.set_caption('')
-    size = width, height = 500, 500
+    size = width, height = 520, 520
     screen = pygame.display.set_mode(size)
 
     mapor = Map_editor("map0", [0, 2, 3], 2)
@@ -91,6 +110,8 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+        for sprite in all_sprites:
+            camera.apply(sprite)
         screen.fill((0, 0, 0))
         mapor.render(screen)
         charik.render(screen)
