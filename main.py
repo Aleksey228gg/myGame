@@ -1,12 +1,8 @@
-
-
 import pygame, random
 
 FPS = 15
 TILE_SIZE = 40
 tile_w = tile_h = 40
-
-
 
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
@@ -78,6 +74,8 @@ class Map_editor:
                     screen.blit(image, (y * self.tile_size + 5, x * self.tile_size + 5))
 
     def is_free(self, pos_x, pos_y):
+        if int(self.map[pos_x][pos_y]) == 3:
+            return 3
         return int(self.map[pos_x][pos_y]) in self.free_tiles
 
 
@@ -109,11 +107,21 @@ class Character(pygame.sprite.Sprite):
             self.hp += self.eqwipment[i].get_state()[1]
             self.damage += self.eqwipment[i].get_state()[2]
             self.armor += self.eqwipment[i].get_state()[3]
+        for i in range(len(self.invtntory)):
+            screen.blit(self.invtntory[i].image, (1000 + (70 * i), 550))
         screen.blit(self.image, (self.x * TILE_SIZE, self.y * TILE_SIZE))
+        f1 = pygame.font.Font(None, 70)
+        hp_bur = f1.render(str(self.hp), 1, (0, 0, 0))
+        screen.blit(hp_bur, (1100, 670))
+        damage_bur = f1.render(str(self.damage), 1, (0, 0, 0))
+        screen.blit(damage_bur, (1330, 700))
+        armor_bur = f1.render(str(self.armor), 1, (0, 0, 0))
+        screen.blit(armor_bur, (1330, 635))
 
     def add_item(self, item):
         if len(self.invtntory) <= 7:
             self.invtntory.append(item)
+            print(self.invtntory)
 
     def eqwip_item(self, item):
         if item.get_state()[0] == "head":
@@ -141,7 +149,7 @@ class Character(pygame.sprite.Sprite):
                 del self.invtntory[self.invtntory.index(item)]
                 self.right_handd = False
 
-    def remove_item(self,item):
+    def remove_item(self, item):
         del self.invtntory[self.invtntory.index(item)]
 
     def aneqwip_item(self, item):
@@ -160,7 +168,7 @@ class Character(pygame.sprite.Sprite):
                 self.invtntory.append(item)
                 del self.eqwipment[self.eqwipment.index(item)]
                 self.legs = False
-        if item.get_state()[0] == "right_hand" or item.get_state()[0] == "left_hand":
+        if item.get_state()[0] == "hands":
             if self.left_hand:
                 self.invtntory.append(item)
                 del self.eqwipment[self.eqwipment.index(item)]
@@ -171,25 +179,8 @@ class Character(pygame.sprite.Sprite):
                 self.right_handd = False
 
 
-
 width, height = 600, 600
 
-
-class Camera:
-    # зададим начальный сдвиг камеры
-    def __init__(self):
-        self.dx = 0
-        self.dy = 0
-
-    # сдвинуть объект obj на смещение камеры
-    def apply(self, obj):
-        obj.rect.x += self.dx
-        obj.rect.y += self.dy
-
-    # позиционировать камеру на объекте target
-    def update(self, target):
-        self.dx = -(target.rect.x + target.rect.w // 2 - width // 2)
-        self.dy = -(target.rect.y + target.rect.h // 2 - height // 2)
 
 class Game:
     def __init__(self, mapp, character):
@@ -212,11 +203,22 @@ class Game:
             next_y += 1
         if self.mapp.is_free(next_x, next_y):
             self.character.set_position((next_x, next_y))
+        if self.mapp.is_free(next_x, next_y) == 3:
+            self.mapp.map[next_x][next_y] = '0'
+            self.character.set_position((next_x, next_y))
+            x = random.randrange(1, 101)
+            if x <= 70:
+                item = random.choice(ITEMS)
+                charik.add_item(item)
+                item.render(screen)
 
 
 class Item:
-    def __init__(self, pos, hp, damage, armore, image):
+    def __init__(self, pos, hp, damage, armore, image, name, text, images_v):
         self.image = pygame.image.load(image)
+        self.image_v = pygame.image.load(images_v)
+        self.name = name
+        self.text = text
         self.pos = pos
         self.hp = hp
         self.damage = damage
@@ -225,10 +227,26 @@ class Item:
     def get_state(self):
         return [self.pos, self.hp, self.damage, self.armore]
 
+    def render(self, screen):
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+            screen.fill((0, 0, 0))
+            screen.blit(self.image_v, (620, 50))
+            f1 = pygame.font.Font(None, 70)
+            name = f1.render(str(self.name), 1, (255, 255, 255))
+            screen.blit(name, (680, 320))
+            f1 = pygame.font.Font(None, 35)
+            text = f1.render(str(self.text), 1, (255, 255, 255))
+            screen.blit(text, (550, 550))
+            pygame.display.flip()
+            clock.tick(FPS)
 
 
-
-camera = Camera()
+sword = Item("hands", 0, 30, 0, "sprites/sword.png", "Меч", '"ИЗВИНИСЬ ПЕРЕД РЫЦЫРЕМ"', "sprites/sword_v.png")
+ITEMS = [sword]
 
 if __name__ == '__main__':
     pygame.init()
@@ -244,13 +262,11 @@ if __name__ == '__main__':
 
     running = True
     clock = pygame.time.Clock()
-    camera.update(charik)
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        for sprite in all_sprites:
-            camera.apply(sprite)
+
         game.update_character()
         screen.fill((0, 0, 0))
         game.rendr()
