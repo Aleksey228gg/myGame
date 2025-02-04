@@ -248,6 +248,7 @@ class Item:
 sword = Item("hands", 0, 30, 0, "sprites/sword.png", "Меч", '"ИЗВИНИСЬ ПЕРЕД РЫЦЫРЕМ"', "sprites/sword_v.png")
 ITEMS = [sword]
 
+
 if __name__ == '__main__':
     pygame.init()
     pygame.display.set_caption('')
