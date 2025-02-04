@@ -35,13 +35,47 @@ class Map_editor:
         self.finish_tile = finish_tile
 
     def render(self, screen):
+        image = pygame.image.load("sprites/fon.jpg")
+        screen.blit(image, (1000, 20))
+        image = pygame.image.load("sprites/char_inventory.png")
+        screen.blit(image, (1000, 20))
+        image = pygame.image.load("sprites/pole_inventori.png")
+        screen.blit(image, (1040, 180))
+        image = pygame.image.load("sprites/pole_inventori.png")
+        screen.blit(image, (1390, 180))
+        image = pygame.image.load("sprites/pole_inventori.png")
+        screen.blit(image, (1215, 40))
+        image = pygame.image.load("sprites/pole_inventori.png")
+        screen.blit(image, (1215, 370))
+        image = pygame.image.load("sprites/pole_inventori.png")
+        screen.blit(image, (1215, 150))
+        image = pygame.image.load("sprites/pole_inventori.png")
+        screen.blit(image, (1000, 550))
+        image = pygame.image.load("sprites/pole_inventori.png")
+        screen.blit(image, (1070, 550))
+        image = pygame.image.load("sprites/pole_inventori.png")
+        screen.blit(image, (1140, 550))
+        image = pygame.image.load("sprites/pole_inventori.png")
+        screen.blit(image, (1210, 550))
+        image = pygame.image.load("sprites/pole_inventori.png")
+        screen.blit(image, (1280, 550))
+        image = pygame.image.load("sprites/pole_inventori.png")
+        screen.blit(image, (1350, 550))
+        image = pygame.image.load("sprites/pole_inventori.png")
+        screen.blit(image, (1420, 550))
+        image = pygame.image.load("sprites/heart.png")
+        screen.blit(image, (1000, 650))
+        image = pygame.image.load("sprites/armor.png")
+        screen.blit(image, (1250, 630))
+        image = pygame.image.load("sprites/damage.png")
+        screen.blit(image, (1250, 700))
         for y in range(self.height):
             for x in range(self.width):
                 if self.map[y][x] == 1:
                     Tile(y, x)
                 elif self.map[y][x] == 3:
                     image = pygame.image.load("sprites/item.png")
-                    screen.blit(image, (x * self.tile_size + 5, y * self.tile_size + 5))
+                    screen.blit(image, (y * self.tile_size + 5, x * self.tile_size + 5))
 
     def is_free(self, pos_x, pos_y):
         return int(self.map[pos_x][pos_y]) in self.free_tiles
@@ -51,6 +85,12 @@ class Character(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
         super().__init__(player_group, all_sprites)
         self.invtntory = []
+        self.eqwipment = []
+        self.head = True
+        self.bady = True
+        self.legs = True
+        self.left_hand = True
+        self.right_hand = True
         self.armor = 20
         self.hp = 100
         self.damage = 15
@@ -65,7 +105,71 @@ class Character(pygame.sprite.Sprite):
         self.x, self.y = position
 
     def render(self, screen):
+        for i in range(len(self.eqwipment)):
+            self.hp += self.eqwipment[i].get_state()[1]
+            self.damage += self.eqwipment[i].get_state()[2]
+            self.armor += self.eqwipment[i].get_state()[3]
         screen.blit(self.image, (self.x * TILE_SIZE, self.y * TILE_SIZE))
+
+    def add_item(self, item):
+        if len(self.invtntory) <= 7:
+            self.invtntory.append(item)
+
+    def eqwip_item(self, item):
+        if item.get_state()[0] == "head":
+            if self.head:
+                self.eqwipment.append(item)
+                del self.invtntory[self.invtntory.index(item)]
+                self.head = False
+        if item.get_state()[0] == "bady":
+            if self.bady:
+                self.eqwipment.append(item)
+                del self.invtntory[self.invtntory.index(item)]
+                self.bady = False
+        if item.get_state()[0] == "legs":
+            if self.legs:
+                self.eqwipment.append(item)
+                del self.invtntory[self.invtntory.index(item)]
+                self.legs = False
+        if item.get_state()[0] == "right_hand" or item.get_state()[0] == "left_hand":
+            if self.left_hand:
+                self.eqwipment.append(item)
+                del self.invtntory[self.invtntory.index(item)]
+                self.left_hand = False
+            elif self.right_hand:
+                self.eqwipment.append(item)
+                del self.invtntory[self.invtntory.index(item)]
+                self.right_handd = False
+
+    def remove_item(self,item):
+        del self.invtntory[self.invtntory.index(item)]
+
+    def aneqwip_item(self, item):
+        if item.get_state()[0] == "head":
+            if self.head:
+                self.invtntory.append(item)
+                del self.eqwipment[self.eqwipment.index(item)]
+                self.head = False
+        if item.get_state()[0] == "bady":
+            if self.bady:
+                self.invtntory.append(item)
+                del self.eqwipment[self.eqwipment.index(item)]
+                self.bady = False
+        if item.get_state()[0] == "legs":
+            if self.legs:
+                self.invtntory.append(item)
+                del self.eqwipment[self.eqwipment.index(item)]
+                self.legs = False
+        if item.get_state()[0] == "right_hand" or item.get_state()[0] == "left_hand":
+            if self.left_hand:
+                self.invtntory.append(item)
+                del self.eqwipment[self.eqwipment.index(item)]
+                self.left_hand = False
+            elif self.right_hand:
+                self.invtntory.append(item)
+                del self.eqwipment[self.eqwipment.index(item)]
+                self.right_handd = False
+
 
 
 width, height = 600, 600
@@ -110,6 +214,18 @@ class Game:
             self.character.set_position((next_x, next_y))
 
 
+class Item:
+    def __init__(self, pos, hp, damage, armore, image):
+        self.image = pygame.image.load(image)
+        self.pos = pos
+        self.hp = hp
+        self.damage = damage
+        self.armore = armore
+
+    def get_state(self):
+        return [self.pos, self.hp, self.damage, self.armore]
+
+
 
 
 camera = Camera()
@@ -137,18 +253,6 @@ if __name__ == '__main__':
             camera.apply(sprite)
         game.update_character()
         screen.fill((0, 0, 0))
-        image = pygame.image.load("sprites/fon.jpg")
-        screen.blit(image, (1000, 20))
-        image = pygame.image.load("sprites/char_inventory.png")
-        screen.blit(image, (1000, 20))
-        image = pygame.image.load("sprites/pole_inventori.png")
-        screen.blit(image, (1040, 250))
-        image = pygame.image.load("sprites/pole_inventori.png")
-        screen.blit(image, (1390, 250))
-        image = pygame.image.load("sprites/pole_inventori.png")
-        screen.blit(image, (1150, 40))
-        image = pygame.image.load("sprites/pole_inventori.png")
-        screen.blit(image, (1130, 370))
         game.rendr()
         pygame.display.flip()
         clock.tick(FPS)
