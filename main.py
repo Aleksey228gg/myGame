@@ -103,10 +103,24 @@ class Character(pygame.sprite.Sprite):
         self.x, self.y = position
 
     def render(self, screen):
+        self.hp = 100
+        self.armor = 20
+        self.damage = 15
         for i in range(len(self.eqwipment)):
             self.hp += self.eqwipment[i].get_state()[1]
             self.damage += self.eqwipment[i].get_state()[2]
             self.armor += self.eqwipment[i].get_state()[3]
+            if self.eqwipment[i].get_state()[0] == "head":
+                screen.blit(self.eqwipment[i].image, (1220, 40))
+            if self.eqwipment[i].get_state()[0] == "bady":
+                screen.blit(self.eqwipment[i].image, (1220, 147))
+            if self.eqwipment[i].get_state()[0] == "legs":
+                screen.blit(self.eqwipment[i].image, (1220, 367))
+            if self.eqwipment[i].get_state()[0] == "hands":
+                if self.right_hand:
+                    screen.blit(self.eqwipment[i].image, (1045, 180))
+                else:
+                    screen.blit(self.eqwipment[i].image, (1398, 180))
         for i in range(len(self.invtntory)):
             screen.blit(self.invtntory[i].image, (1000 + (70 * i), 550))
         screen.blit(self.image, (self.x * TILE_SIZE, self.y * TILE_SIZE))
@@ -139,7 +153,7 @@ class Character(pygame.sprite.Sprite):
                 self.eqwipment.append(item)
                 del self.invtntory[self.invtntory.index(item)]
                 self.legs = False
-        if item.get_state()[0] == "right_hand" or item.get_state()[0] == "left_hand":
+        if item.get_state()[0] == "hands":
             if self.left_hand:
                 self.eqwipment.append(item)
                 del self.invtntory[self.invtntory.index(item)]
@@ -147,7 +161,7 @@ class Character(pygame.sprite.Sprite):
             elif self.right_hand:
                 self.eqwipment.append(item)
                 del self.invtntory[self.invtntory.index(item)]
-                self.right_handd = False
+                self.right_hand = False
 
     def remove_item(self, item):
         del self.invtntory[self.invtntory.index(item)]
@@ -241,11 +255,24 @@ class Item:
             f1 = pygame.font.Font(None, 35)
             text = f1.render(str(self.text), 1, (255, 255, 255))
             screen.blit(text, (550, 550))
+            image = pygame.image.load("sprites/heart.png")
+            screen.blit(image, (420, 430))
+            image = pygame.image.load("sprites/armor.png")
+            screen.blit(image, (670, 430))
+            image = pygame.image.load("sprites/damage.png")
+            screen.blit(image, (920, 430))
+            f1 = pygame.font.Font(None, 45)
+            hp_bur = f1.render(str(self.hp), 1, (255, 255, 255))
+            screen.blit(hp_bur, (570, 450))
+            armor_bur = f1.render(str(self.armore), 1, (255, 255, 255))
+            screen.blit(armor_bur, (790, 450))
+            damage_bur = f1.render(str(self.damage), 1, (255, 255, 255))
+            screen.blit(damage_bur, (1020, 450))
             pygame.display.flip()
             clock.tick(FPS)
 
 
-sword = Item("hands", 0, 30, 0, "sprites/sword.png", "Меч", '"ИЗВИНИСЬ ПЕРЕД РЫЦЫРЕМ"', "sprites/sword_v.png")
+sword = Item("hands", 0, 30, 0, "sprites/sword.png", "Меч", '"ИЗВИНИСЬ ПЕРЕД РЫЦЫРЕМ!"', "sprites/sword_v.png")
 ITEMS = [sword]
 
 
@@ -267,6 +294,13 @@ if __name__ == '__main__':
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_1:
+                    charik.eqwip_item(charik.invtntory[0])
+                    print(".")
+                    print(charik.right_hand)
+                    print(charik.left_hand)
+                    print(charik.eqwipment)
 
         game.update_character()
         screen.fill((0, 0, 0))
