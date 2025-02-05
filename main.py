@@ -116,11 +116,10 @@ class Character(pygame.sprite.Sprite):
                 screen.blit(self.eqwipment[i].image, (1220, 147))
             if self.eqwipment[i].get_state()[0] == "legs":
                 screen.blit(self.eqwipment[i].image, (1220, 367))
-            if self.eqwipment[i].get_state()[0] == "hands":
-                if self.right_hand:
-                    screen.blit(self.eqwipment[i].image, (1045, 180))
-                else:
-                    screen.blit(self.eqwipment[i].image, (1398, 180))
+            if self.eqwipment[i].get_state()[0] == "right_hand":
+                screen.blit(self.eqwipment[i].image, (1045, 180))
+            if self.eqwipment[i].get_state()[0] == "left_hand":
+                screen.blit(self.eqwipment[i].image, (1398, 180))
         for i in range(len(self.invtntory)):
             screen.blit(self.invtntory[i].image, (1000 + (70 * i), 550))
         screen.blit(self.image, (self.x * TILE_SIZE, self.y * TILE_SIZE))
@@ -153,15 +152,17 @@ class Character(pygame.sprite.Sprite):
                 self.eqwipment.append(item)
                 del self.invtntory[self.invtntory.index(item)]
                 self.legs = False
-        if item.get_state()[0] == "hands":
+        if item.get_state()[0] == "right_hand":
+            if self.right_hand:
+                self.eqwipment.append(item)
+                del self.invtntory[self.invtntory.index(item)]
+                self.right_hand = False
+
+        if item.get_state()[0] == "left_hand":
             if self.left_hand:
                 self.eqwipment.append(item)
                 del self.invtntory[self.invtntory.index(item)]
                 self.left_hand = False
-            elif self.right_hand:
-                self.eqwipment.append(item)
-                del self.invtntory[self.invtntory.index(item)]
-                self.right_hand = False
 
     def remove_item(self, item):
         del self.invtntory[self.invtntory.index(item)]
@@ -182,15 +183,17 @@ class Character(pygame.sprite.Sprite):
                 self.invtntory.append(item)
                 del self.eqwipment[self.eqwipment.index(item)]
                 self.legs = False
-        if item.get_state()[0] == "hands":
+        if item.get_state()[0] == "right_hand":
+            if self.right_hand:
+                self.invtntory.append(item)
+                del self.eqwipment[self.eqwipment.index(item)]
+                self.right_hand = False
+
+        if item.get_state()[0] == "left_hand":
             if self.left_hand:
                 self.invtntory.append(item)
                 del self.eqwipment[self.eqwipment.index(item)]
                 self.left_hand = False
-            elif self.right_hand:
-                self.invtntory.append(item)
-                del self.eqwipment[self.eqwipment.index(item)]
-                self.right_handd = False
 
 
 width, height = 600, 600
@@ -225,6 +228,9 @@ class Game:
                 item = random.choice(ITEMS)
                 charik.add_item(item)
                 item.render(screen)
+            else:
+                batl = Battle(charik, random.choice(MOBSS))
+                batl.render(screen)
 
 
 class Item:
@@ -272,9 +278,88 @@ class Item:
             clock.tick(FPS)
 
 
-sword = Item("hands", 0, 30, 0, "sprites/sword.png", "Меч", '"ИЗВИНИСЬ ПЕРЕД РЫЦЫРЕМ!"', "sprites/sword_v.png")
-ITEMS = [sword]
+class Mobs:
+    def __init__(self, hp, damage, armore, image, name):
+        self.image = pygame.image.load(image)
+        self.name = name
+        self.hp = hp
+        self.damage = damage
+        self.armore = armore
 
+    def get_state(self):
+        return [self.hp, self.damage, self.armore]
+
+
+class Battle:
+    def __init__(self, carik, mob):
+        self.carik = carik
+        self.mob = mob
+
+    def render(self, screen):
+        running = True
+        moves = 1
+        screen.fill((0, 0, 0))
+        while running:
+            screen.fill((0, 0, 0))
+            screen.blit(pygame.image.load("sprites/character_v.png"), (70, 30))
+            screen.blit(self.mob.image, (1000, 30))
+            image = pygame.image.load("sprites/heart.png")
+            screen.blit(image, (120, 430))
+            image = pygame.image.load("sprites/armor.png")
+            screen.blit(image, (120, 530))
+            image = pygame.image.load("sprites/damage.png")
+            screen.blit(image, (120, 630))
+            image = pygame.image.load("sprites/heart.png")
+            screen.blit(image, (1120, 430))
+            image = pygame.image.load("sprites/armor.png")
+            screen.blit(image, (1120, 530))
+            image = pygame.image.load("sprites/damage.png")
+            screen.blit(image, (1120, 630))
+            f1 = pygame.font.Font(None, 45)
+            hp_bur = f1.render(str(charik.hp), 1, (255, 255, 255))
+            screen.blit(hp_bur, (220, 450))
+            armor_bur = f1.render(str(charik.armor), 1, (255, 255, 255))
+            screen.blit(armor_bur, (220, 550))
+            damage_bur = f1.render(str(charik.damage), 1, (255, 255, 255))
+            screen.blit(damage_bur, (220, 650))
+            hp_bur1 = f1.render(str(self.mob.hp), 1, (255, 255, 255))
+            screen.blit(hp_bur1, (920, 450))
+            armor_bur1 = f1.render(str(self.mob.armore), 1, (255, 255, 255))
+            screen.blit(armor_bur1, (920, 550))
+            damage_bur1 = f1.render(str(self.mob.damage), 1, (255, 255, 255))
+            screen.blit(damage_bur1, (920, 650))
+            for event in pygame.event.get():
+                if self.carik.hp <= 0:
+                    running = False
+                if self.mob.hp <= 0:
+                    running = False
+
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        if moves == 1:
+                            screen.fill((0, 0, 0))
+                            self.mob.hp -= round(self.carik.damage - ((self.carik.damage / 1000) * self.mob.armore))
+                            print(round(self.carik.damage - ((self.carik.damage / 1000) * self.mob.armore)))
+                            print(self.mob.hp)
+                            moves = 2
+                        else:
+                            screen.fill((0, 0, 0))
+                            screen.blit(pygame.image.load("sprites/character_v.png"), (70, 30))
+                            screen.blit(self.mob.image, (900, 30))
+                            self.carik.hp -= round(self.mob.damage - ((self.mob.damage / 1000) * self.carik.armor))
+                            print(round(self.mob.damage - ((self.mob.damage / 1000) * self.carik.armor)))
+                            print(self.carik.hp)
+                            moves = 1
+            pygame.display.flip()
+            clock.tick(FPS)
+
+
+sword = Item("right_hand", 0, 30, 0, "sprites/sword.png", "Меч", '"ИЗВИНИСЬ ПЕРЕД РЫЦЫРЕМ!"', "sprites/sword_v.png")
+shield = Item("left_hand", 0, 10, 20, "sprites/shield.png", "Щит", '"Оуууу шит!"', "sprites/shield_v.png")
+foil_hat = Item("head", 00, 0, 20, "sprites/foil_hat.png", "Шапочка из фольги", '"100% защита от инопланетян"', "sprites/foil_hat_v.png")
+ITEMS = [sword, shield, foil_hat]
+bear = Mobs(200, 40, 10, "sprites/bear.png", "Медведь")
+MOBSS = [bear]
 
 if __name__ == '__main__':
     pygame.init()
@@ -296,11 +381,32 @@ if __name__ == '__main__':
                 running = False
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_1:
-                    charik.eqwip_item(charik.invtntory[0])
-                    print(".")
-                    print(charik.right_hand)
-                    print(charik.left_hand)
-                    print(charik.eqwipment)
+                    if len(charik.invtntory) >= 1:
+                        charik.eqwip_item(charik.invtntory[0])
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_2:
+                    if len(charik.invtntory) >= 2:
+                        charik.eqwip_item(charik.invtntory[1])
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_3:
+                    if len(charik.invtntory) >= 3:
+                        charik.eqwip_item(charik.invtntory[2])
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_4:
+                    if len(charik.invtntory) >= 4:
+                        charik.eqwip_item(charik.invtntory[3])
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_5:
+                    if len(charik.invtntory) >= 5:
+                        charik.eqwip_item(charik.invtntory[4])
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_6:
+                    if len(charik.invtntory) >= 6:
+                        charik.eqwip_item(charik.invtntory[5])
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_7:
+                    if len(charik.invtntory) >= 7:
+                        charik.eqwip_item(charik.invtntory[6])
 
         game.update_character()
         screen.fill((0, 0, 0))
