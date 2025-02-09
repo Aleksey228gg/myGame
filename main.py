@@ -1,4 +1,7 @@
+from os.path import split
+
 import pygame, random
+import os.path
 
 FPS = 15
 TILE_SIZE = 40
@@ -7,6 +10,31 @@ tile_w = tile_h = 40
 all_sprites = pygame.sprite.Group()
 tiles_group = pygame.sprite.Group()
 player_group = pygame.sprite.Group()
+
+
+class Meny:
+    def __init__(self):
+        running = True
+        clock = pygame.time.Clock()
+        image = pygame.image.load("sprites/fon.jpg")
+        screen.blit(image, (0, 0))
+        file_path = "saves/user.txt"
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        if os.path.exists(file_path):
+                            running = False
+                        else:
+                            with open("saves/user.txt", "w") as f:
+                                f.write("1" + '\n')
+                                f.write("1" + '\n')
+                                f.write("map0" + '\n')
+                                f.write("None" + '\n')
+                                f.write("None" + '\n')
+                            running = False
+            pygame.display.flip()
+            clock.tick(FPS)
 
 
 class Tile(pygame.sprite.Sprite):
@@ -72,6 +100,9 @@ class Map_editor:
                 elif self.map[y][x] == 3:
                     image = pygame.image.load("sprites/item.png")
                     screen.blit(image, (y * self.tile_size + 5, x * self.tile_size + 5))
+                elif self.map[y][x] == 2:
+                    image = pygame.image.load("sprites/door.png")
+                    screen.blit(image, (y * self.tile_size + 5, x * self.tile_size + 5))
 
     def is_free(self, pos_x, pos_y):
         if int(self.map[pos_x][pos_y]) == 3:
@@ -84,6 +115,18 @@ class Character(pygame.sprite.Sprite):
         super().__init__(player_group, all_sprites)
         self.invtntory = []
         self.eqwipment = []
+        with open("saves/user.txt", "r") as f:
+            if list(f)[3].rstrip('\n') != 'None':
+                f.seek(0)
+                for i in range(len(list(f)[3].rstrip('\n').split())):
+                    f.seek(0)
+                    self.invtntory.append(ITEMS_SWOP_OUT[list(f)[3].rstrip('\n').split()[i]])
+        with open("saves/user.txt", "r") as f:
+            if list(f)[4].rstrip('\n') != 'None':
+                f.seek(0)
+                for i in range(len(list(f)[4].rstrip('\n').split())):
+                    f.seek(0)
+                    self.eqwipment.append(ITEMS_SWOP_OUT[list(f)[4].rstrip('\n').split()[i]])
         self.head = True
         self.bady = True
         self.legs = True
@@ -224,8 +267,9 @@ class Game:
             self.mapp.map[next_x][next_y] = '0'
             self.character.set_position((next_x, next_y))
             x = random.randrange(1, 101)
-            if x <= 70:
+            if x <= 50:
                 item = random.choice(ITEMS)
+                del ITEMS[ITEMS.index(item)]
                 charik.add_item(item)
                 item.render(screen)
             else:
@@ -251,13 +295,14 @@ class Item:
         running = True
         while running:
             for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:
+                        running = False
             screen.fill((0, 0, 0))
             screen.blit(self.image_v, (620, 50))
             f1 = pygame.font.Font(None, 70)
             name = f1.render(str(self.name), 1, (255, 255, 255))
-            screen.blit(name, (680, 320))
+            screen.blit(name, (630, 320))
             f1 = pygame.font.Font(None, 35)
             text = f1.render(str(self.text), 1, (255, 255, 255))
             screen.blit(text, (550, 550))
@@ -300,7 +345,6 @@ class Battle:
         moves = 1
         screen.fill((0, 0, 0))
         while running:
-            screen.fill((0, 0, 0))
             screen.blit(pygame.image.load("sprites/character_v.png"), (70, 30))
             screen.blit(self.mob.image, (1000, 30))
             image = pygame.image.load("sprites/heart.png")
@@ -330,6 +374,7 @@ class Battle:
             screen.blit(damage_bur1, (920, 650))
             for event in pygame.event.get():
                 if self.carik.hp <= 0:
+
                     running = False
                 if self.mob.hp <= 0:
                     running = False
@@ -339,16 +384,20 @@ class Battle:
                         if moves == 1:
                             screen.fill((0, 0, 0))
                             self.mob.hp -= round(self.carik.damage - ((self.carik.damage / 1000) * self.mob.armore))
-                            print(round(self.carik.damage - ((self.carik.damage / 1000) * self.mob.armore)))
-                            print(self.mob.hp)
+                            f1 = pygame.font.Font(None, 45)
+                            news = f1.render("Вы наносите " + str(self.mob.name) + ' ' + str(
+                                round(self.carik.damage - ((self.carik.damage / 1000) * self.mob.armore))), 1,
+                                             (255, 255, 255))
+                            screen.blit(news, (300, 300))
                             moves = 2
                         else:
                             screen.fill((0, 0, 0))
-                            screen.blit(pygame.image.load("sprites/character_v.png"), (70, 30))
-                            screen.blit(self.mob.image, (900, 30))
                             self.carik.hp -= round(self.mob.damage - ((self.mob.damage / 1000) * self.carik.armor))
-                            print(round(self.mob.damage - ((self.mob.damage / 1000) * self.carik.armor)))
-                            print(self.carik.hp)
+                            f1 = pygame.font.Font(None, 45)
+                            news = f1.render(str(self.mob.name) + ' ' + 'наносит вам ' + str(
+                                round(self.mob.damage - ((self.mob.damage / 1000) * self.carik.armor))), 1,
+                                             (255, 255, 255))
+                            screen.blit(news, (300, 300))
                             moves = 1
             pygame.display.flip()
             clock.tick(FPS)
@@ -356,8 +405,28 @@ class Battle:
 
 sword = Item("right_hand", 0, 30, 0, "sprites/sword.png", "Меч", '"ИЗВИНИСЬ ПЕРЕД РЫЦЫРЕМ!"', "sprites/sword_v.png")
 shield = Item("left_hand", 0, 10, 20, "sprites/shield.png", "Щит", '"Оуууу шит!"', "sprites/shield_v.png")
-foil_hat = Item("head", 00, 0, 20, "sprites/foil_hat.png", "Шапочка из фольги", '"100% защита от инопланетян"', "sprites/foil_hat_v.png")
-ITEMS = [sword, shield, foil_hat]
+foil_hat = Item("head", 00, 0, 20, "sprites/foil_hat.png", "Шапочка из фольги", '"100% защита от инопланетян"',
+                "sprites/foil_hat_v.png")
+bulletproof_diaper = Item("legs", 10, 0, 40, "sprites/bulletproof_diaper.png", "Пуленепробиваемый подгузник",
+                          '"гарантия безопасности"', "sprites/bulletproof_diaper_v.png")
+electric_broom = Item("right_hand", 0, 50, 0, "sprites/electric_broom.png", "Электро-веник",
+                      '"Говорят им пользовался сам Зевс"', "sprites/electric_broom_v.png")
+chain_mail = Item("bady", 20, 0, 50, "sprites/chain_mail.png", "Кольчуга",
+                  '"да, это кольчуга, а не кусок битых пикселей"', "sprites/chain_mail_v.png")
+festive_cap = Item("head", 25, 0, 5, "sprites/festive_cap.png", "Празднечный колпак", '"С праздником!"',
+                   "sprites/festive_cap_v.png")
+klacic_fingershooter = Item("left_hand", 0, 45, 0, "sprites/klacic_fingershooter.png", "Класический пальцестрел",
+                            '"Пау, Пау!"', "sprites/klacic_fingershooter_v.png")
+t_shirt_guchi = Item("bady", 5, 0, 5, "sprites/T-shirt_guchi.png", "Майка Гучи",
+                     '"какая то бедность дотронулась до меня"', "sprites/T-shirt_guchi_v.png")
+ITEMS = [sword, shield, foil_hat, bulletproof_diaper, electric_broom, chain_mail, festive_cap, klacic_fingershooter,
+         t_shirt_guchi]
+ITEMS_SWOP_TO = {sword: "sword", shield: "shield", foil_hat: "foil_hat", bulletproof_diaper: "bulletproof_diaper",
+                 electric_broom: "electric_broom", chain_mail: "chain_mail", festive_cap: "festive_cap",
+                 klacic_fingershooter: "klacic_fingershooter", t_shirt_guchi: "t_shirt_guchi"}
+ITEMS_SWOP_OUT = {"sword": sword, "shield": shield, "foil_hat": foil_hat, "bulletproof_diaper": bulletproof_diaper,
+                  "electric_broom": electric_broom, "chain_mail": chain_mail, "festive_cap": festive_cap,
+                  "klacic_fingershooter": klacic_fingershooter, "t_shirt_guchi": t_shirt_guchi}
 bear = Mobs(200, 40, 10, "sprites/bear.png", "Медведь")
 MOBSS = [bear]
 
@@ -366,9 +435,14 @@ if __name__ == '__main__':
     pygame.display.set_caption('')
     size = width, height = (1500, 800)
     screen = pygame.display.set_mode(size)
-
-    mapor = Map_editor("map0", [0, 2, 3], 2)
-    charik = Character(1, 1)
+    m = Meny()
+    with open("saves/user.txt", "r", encoding="UTF-8") as f:
+        x = int(list(f)[0].rstrip("\n"))
+    with open("saves/user.txt", "r", encoding="UTF-8") as f:
+        y = int(list(f)[1].rstrip("\n"))
+        charik = Character(x, y)
+    with open("saves/user.txt", "r", encoding="UTF-8") as f:
+        mapor = Map_editor(list(f)[2].rstrip("\n"), [0, 2, 3], 2)
     game = Game(mapor, charik)
     image = pygame.image.load("sprites/item.png")
     screen.blit(image, (80, 80))
@@ -378,6 +452,26 @@ if __name__ == '__main__':
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
+                with open("saves/user.txt", "r+") as f:
+                    f.write(str(charik.get_position()[0]) + '\n')
+                    f.write(str(charik.get_position()[1]) + '\n')
+                    f.write("map0" + '\n')
+                    if charik.invtntory:
+                        for i in range(len(charik.invtntory)):
+                            if i == len(charik.invtntory) - 1:
+                                f.write(ITEMS_SWOP_TO[charik.invtntory[i]] + '\n')
+                            else:
+                                f.write(ITEMS_SWOP_TO[charik.invtntory[i]] + ' ')
+                    else:
+                        f.write("None" + '\n')
+                    if charik.eqwipment:
+                        for i in range(len(charik.eqwipment)):
+                            if i == len(charik.eqwipment) - 1:
+                                f.write(ITEMS_SWOP_TO[charik.eqwipment[i]] + '\n')
+                            else:
+                                f.write(ITEMS_SWOP_TO[charik.eqwipment[i]] + ' ')
+                    else:
+                        f.write("None" + '\n')
                 running = False
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_1:
