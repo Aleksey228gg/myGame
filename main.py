@@ -1,5 +1,3 @@
-from os.path import split
-
 import pygame, random
 import os.path
 
@@ -16,8 +14,13 @@ class Meny:
     def __init__(self):
         running = True
         clock = pygame.time.Clock()
-        image = pygame.image.load("sprites/fon.jpg")
-        screen.blit(image, (0, 0))
+        image = pygame.image.load("sprites/fon_meny.jpg")
+        screen.blit(image, (35, 0))
+        image = pygame.image.load("sprites/character_v.png")
+        screen.blit(image, (350, 470))
+        f1 = pygame.font.Font(None, 70)
+        hp_bur = f1.render("Нажмите пробел", 1, (0, 0, 0))
+        screen.blit(hp_bur, (600, 670))
         file_path = "saves/user.txt"
         while running:
             for event in pygame.event.get():
@@ -100,15 +103,33 @@ class Map_editor:
                 elif self.map[y][x] == 3:
                     image = pygame.image.load("sprites/item.png")
                     screen.blit(image, (y * self.tile_size + 5, x * self.tile_size + 5))
-                elif self.map[y][x] == 2:
+                elif self.map[y][x] == 4:
                     image = pygame.image.load("sprites/door.png")
+                    screen.blit(image, (y * self.tile_size + 5, x * self.tile_size + 5))
+                elif self.map[y][x] == 5:
+                    image = pygame.image.load("sprites/door.png")
+                    screen.blit(image, (y * self.tile_size + 5, x * self.tile_size + 5))
+                elif self.map[y][x] == 6:
+                    image = pygame.image.load("sprites/door.png")
+                    screen.blit(image, (y * self.tile_size + 5, x * self.tile_size + 5))
+                elif self.map[y][x] == 7:
+                    image = pygame.image.load("sprites/door.png")
+                    screen.blit(image, (y * self.tile_size + 5, x * self.tile_size + 5))
+                elif self.map[y][x] == 8:
+                    image = pygame.image.load("sprites/demon.png")
                     screen.blit(image, (y * self.tile_size + 5, x * self.tile_size + 5))
 
     def is_free(self, pos_x, pos_y):
         if int(self.map[pos_x][pos_y]) == 3:
             return 3
+
         return int(self.map[pos_x][pos_y]) in self.free_tiles
 
+    def nexy_map(self, map_name):
+        self.map = []
+        with open("maps/" + map_name) as map_file:
+            for line in map_file:
+                self.map.append(list(map(int, line.split())))
 
 class Character(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y):
@@ -146,7 +167,7 @@ class Character(pygame.sprite.Sprite):
         self.x, self.y = position
 
     def render(self, screen):
-        self.hp = 100
+        self.hp = 10000
         self.armor = 20
         self.damage = 15
         for i in range(len(self.eqwipment)):
@@ -250,6 +271,9 @@ class Game:
     def rendr(self):
         self.mapp.render(screen)
         self.character.render(screen)
+        with open("saves/user.txt", "r") as f:
+            old_data = f.read()
+            self.new_data = old_data
 
     def update_character(self):
         next_x, next_y = self.character.get_position()
@@ -275,6 +299,69 @@ class Game:
             else:
                 batl = Battle(charik, random.choice(MOBSS))
                 batl.render(screen)
+        if self.mapp.map[next_x][next_y] == 4:
+            charik.set_position((1, 1))
+            with open("saves/user.txt", "r") as f:
+                old_data = f.read()
+
+            self.new_data = old_data.replace(old_data.split("\n")[2], "map1")
+            with open("saves/user.txt", "w") as f:
+                f.write(self.new_data)
+            print(self.new_data)
+            mapor.nexy_map("map1")
+
+        if self.mapp.map[next_x][next_y] == 5:
+            charik.set_position((1, 1))
+            with open("saves/user.txt", "r") as f:
+                old_data = f.read()
+
+            self.new_data = old_data.replace(old_data.split("\n")[2], "map2")
+            with open("saves/user.txt", "w") as f:
+                f.write(self.new_data)
+            print(self.new_data)
+            mapor.nexy_map("map2")
+        if self.mapp.map[next_x][next_y] == 6:
+            charik.set_position((1, 1))
+            with open("saves/user.txt", "r") as f:
+                old_data = f.read()
+
+            self.new_data = old_data.replace(old_data.split("\n")[2], "map3")
+            with open("saves/user.txt", "w") as f:
+                f.write(self.new_data)
+            print(self.new_data)
+        if self.mapp.map[next_x][next_y] == 7:
+            running = True
+            clock = pygame.time.Clock()
+            image = pygame.image.load("sprites/fon_meny.jpg")
+            screen.blit(image, (35, 0))
+            image = pygame.image.load("sprites/character_v.png")
+            screen.blit(image, (350, 470))
+            f1 = pygame.font.Font(None, 70)
+            hp_bur = f1.render("Вы выбролись из подземелия, по крайней мере вы так думаете....", 1, (0, 0, 0))
+            screen.blit(hp_bur, (600, 670))
+            file_path = "saves/user.txt"
+            while running:
+                for event in pygame.event.get():
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_SPACE:
+                            if os.path.exists(file_path):
+                                running = False
+                            else:
+                                with open("saves/user.txt", "w") as f:
+                                    f.write("1" + '\n')
+                                    f.write("1" + '\n')
+                                    f.write("map0" + '\n')
+                                    f.write("None" + '\n')
+                                    f.write("None" + '\n')
+                                running = False
+                pygame.display.flip()
+                clock.tick(FPS)
+                charik.set_position((1, 1))
+                mapor.nexy_map("map0")
+        if self.mapp.map[next_x][next_y] == 8:
+            bos = Battle(charik, demon)
+            self.mapp.map[next_x][next_y] = '0'
+            bos.render(screen)
 
 
 class Item:
@@ -374,8 +461,21 @@ class Battle:
             screen.blit(damage_bur1, (920, 650))
             for event in pygame.event.get():
                 if self.carik.hp <= 0:
-
-                    running = False
+                    while running:
+                        image = pygame.image.load("sprites/died.jpg")
+                        screen.blit(image, (45, 0))
+                        for event in pygame.event.get():
+                            if event.type == pygame.KEYDOWN:
+                                if event.key == pygame.K_SPACE:
+                                    running = False
+                        pygame.display.flip()
+                    with open("saves/user.txt", "w") as f:
+                        f.write("1" + '\n')
+                        f.write("1" + '\n')
+                        f.write("map0" + '\n')
+                        f.write("None" + '\n')
+                        f.write("None" + '\n')
+                    pygame.quit()
                 if self.mob.hp <= 0:
                     running = False
 
@@ -428,6 +528,7 @@ ITEMS_SWOP_OUT = {"sword": sword, "shield": shield, "foil_hat": foil_hat, "bulle
                   "electric_broom": electric_broom, "chain_mail": chain_mail, "festive_cap": festive_cap,
                   "klacic_fingershooter": klacic_fingershooter, "t_shirt_guchi": t_shirt_guchi}
 bear = Mobs(200, 40, 10, "sprites/bear.png", "Медведь")
+demon = Mobs(450, 70, 80, "sprites/demon_v.png", "Чорт")
 MOBSS = [bear]
 
 if __name__ == '__main__':
@@ -442,7 +543,7 @@ if __name__ == '__main__':
         y = int(list(f)[1].rstrip("\n"))
         charik = Character(x, y)
     with open("saves/user.txt", "r", encoding="UTF-8") as f:
-        mapor = Map_editor(list(f)[2].rstrip("\n"), [0, 2, 3], 2)
+        mapor = Map_editor(list(f)[2].rstrip("\n"), [0, 3, 4, 5, 6, 7, 8], [4, 5, 6, 7, 8])
     game = Game(mapor, charik)
     image = pygame.image.load("sprites/item.png")
     screen.blit(image, (80, 80))
@@ -455,7 +556,8 @@ if __name__ == '__main__':
                 with open("saves/user.txt", "r+") as f:
                     f.write(str(charik.get_position()[0]) + '\n')
                     f.write(str(charik.get_position()[1]) + '\n')
-                    f.write("map0" + '\n')
+                    f.write(game.new_data.split()[2].rstrip('\n') + '\n')
+                    print(game.new_data.split()[2].rstrip('\n') + '\n')
                     if charik.invtntory:
                         for i in range(len(charik.invtntory)):
                             if i == len(charik.invtntory) - 1:
