@@ -529,7 +529,10 @@ ITEMS_SWOP_OUT = {"sword": sword, "shield": shield, "foil_hat": foil_hat, "bulle
                   "klacic_fingershooter": klacic_fingershooter, "t_shirt_guchi": t_shirt_guchi}
 bear = Mobs(200, 40, 10, "sprites/bear.png", "Медведь")
 demon = Mobs(450, 70, 80, "sprites/demon_v.png", "Чорт")
-MOBSS = [bear]
+goblin = Mobs(50, 20, 5, "sprites/goblin.png", "Гоблин")
+turt = Mobs(70, 25, 100, "sprites/turt.png", "Черепаха")
+bug = Mobs(77, 77, 77, "sprites/bug.png", "Баг")
+MOBSS = [bear, goblin, turt, bug]
 
 if __name__ == '__main__':
     pygame.init()
